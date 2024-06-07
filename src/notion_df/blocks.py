@@ -20,10 +20,10 @@ from notion_df.base import (
 
 class ParentObject(BaseModel):
     type: str
-    database_id: Optional[str]
-    page_id: Optional[str]
-    workspace: Optional[bool]
-    block_id: Optional[str]
+    database_id: Optional[str] = None
+    page_id: Optional[str] = None
+    workspace: Optional[bool] = None
+    block_id: Optional[str] = None
 
 
 # BaseClasses
@@ -32,37 +32,37 @@ class BaseAttributes(BaseModel):
 
 
 class BaseAttributeWithChildren(BaseModel):
-    children: Optional[List["BaseNotionBlock"]]
+    children: Optional[List["BaseNotionBlock"]] = None
 
 
 class TextBlockAttributes(BaseAttributeWithChildren):
     rich_text: List[RichTextObject]
-    color: Optional[NotionExtendedColorEnum]
+    color: Optional[NotionExtendedColorEnum] = None
 
 
 class HeadingBlockAttributes(BaseAttributeWithChildren):
     rich_text: List[RichTextObject]
-    color: Optional[NotionExtendedColorEnum]
+    color: Optional[NotionExtendedColorEnum] = None
     is_toggleable: bool
     # Whether or not the heading block is a toggle heading or not. If true, the heading block has toggle and can support children. If false, the heading block is a normal heading block.
 
 
 class CalloutBlockAttributes(BaseAttributeWithChildren):
     rich_text: List[RichTextObject]
-    icon: Optional[Union[FileObject, EmojiObject]]
-    color: Optional[NotionExtendedColorEnum]
+    icon: Optional[Union[FileObject, EmojiObject]] = None
+    color: Optional[NotionExtendedColorEnum] = None
 
 
 class ToDoBlockAttributes(BaseAttributeWithChildren):
     rich_text: List[RichTextObject]
-    color: Optional[NotionExtendedColorEnum]
-    checked: Optional[bool]
+    color: Optional[NotionExtendedColorEnum] = None
+    checked: Optional[bool] = None
 
 
 class CodeBlockAttributes(BaseAttributes):
     rich_text: List[RichTextObject]
-    caption: Optional[List[RichTextObject]]
-    language: Optional[str]  # TODO: it's actually an enum
+    caption: Optional[List[RichTextObject]] = None
+    language: Optional[str] = None  # TODO: it's actually an enum
 
 
 class ChildPageAttributes(BaseAttributes):
@@ -74,7 +74,7 @@ class EmbedBlockAttributes(BaseAttributes):
 
 
 class ImageBlockAttributes(BaseAttributes, FileObject):
-    caption: Optional[List[RichTextObject]]
+    caption: Optional[List[RichTextObject]] = None
     # This is not listed in the docs, but it is in the API response (Nov 2022)
 
 
@@ -84,7 +84,7 @@ class VideoBlockAttributes(BaseAttributes):
 
 class FileBlockAttributes(BaseAttributes):
     file: FileObject
-    caption: Optional[List[RichTextObject]]
+    caption: Optional[List[RichTextObject]] = None
 
 
 class PdfBlockAttributes(BaseAttributes):
@@ -93,7 +93,7 @@ class PdfBlockAttributes(BaseAttributes):
 
 class BookmarkBlockAttributes(BaseAttributes):
     url: str
-    caption: Optional[List[RichTextObject]]
+    caption: Optional[List[RichTextObject]] = None
 
 
 class EquationBlockAttributes(BaseAttributes):
@@ -101,7 +101,7 @@ class EquationBlockAttributes(BaseAttributes):
 
 
 class TableOfContentsAttributes(BaseAttributes):
-    color: Optional[NotionExtendedColorEnum]
+    color: Optional[NotionExtendedColorEnum] = None
 
 
 class LinkPreviewAttributes(BaseAttributes):
@@ -110,8 +110,8 @@ class LinkPreviewAttributes(BaseAttributes):
 
 class LinkToPageAttributes(BaseAttributes):
     type: str
-    page_id: Optional[str]
-    database_id: Optional[str]
+    page_id: Optional[str] = None
+    database_id: Optional[str] = None
 
 
 ATTRIBUTES_MAPPING = {
@@ -123,15 +123,15 @@ ATTRIBUTES_MAPPING = {
 
 class BaseNotionBlock(BaseModel):
     object: str = "block"
-    parent: Optional[ParentObject]
-    id: Optional[str]
-    type: Optional[str]
-    created_time: Optional[str]
+    parent: Optional[ParentObject] = None
+    id: Optional[str] = None
+    type: Optional[str] = None
+    created_time: Optional[str] = None
     # created_by
-    last_edited_time: Optional[str]
+    last_edited_time: Optional[str] = None
     # created_by
-    has_children: Optional[bool]
-    archived: Optional[bool]
+    has_children: Optional[bool] = None
+    archived: Optional[bool] = None
     type: str
 
     @property
@@ -244,7 +244,7 @@ class EquationBlock(BaseNotionBlock):
 
 class DividerBlock(BaseNotionBlock):
     type: str = "divider"
-    divider: Optional[Dict]
+    divider: Optional[Dict] = None
 
 
 class TableOfContentsBlock(BaseNotionBlock):
@@ -254,7 +254,7 @@ class TableOfContentsBlock(BaseNotionBlock):
 
 class BreadcrumbBlock(BaseNotionBlock):
     type: str = "breadcrumb"
-    breadcrumb: Optional[Dict]
+    breadcrumb: Optional[Dict] = None
 
 
 # TODO: Column List and Column Blocks

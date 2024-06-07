@@ -3,7 +3,7 @@ import warnings
 import itertools
 from dataclasses import dataclass
 
-from pydantic import BaseModel, validator, parse_obj_as
+from pydantic import field_validator, BaseModel, validator, parse_obj_as
 from pandas.api.types import (
     is_datetime64_any_dtype,
     is_numeric_dtype,
@@ -32,12 +32,14 @@ from notion_df.utils import (
 
 
 class BasePropertyConfig(BaseModel):
-    id: Optional[str]
-    type: Optional[str]
+    id: Optional[str] = None
+    type: Optional[str] = None
 
     def query_dict(self):
         return flatten_dict(self.dict())
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("type", always=True)
     def automatically_set_type_value(cls, v):
         _type = list(cls.__fields__.keys())[-1]
@@ -52,7 +54,8 @@ class TitleConfig(BasePropertyConfig):
     title: Dict = {}
 
     # TODO: Make the validator automatically geneerated
-    @validator("title")
+    @field_validator("title")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The title dict must be empty")
@@ -62,7 +65,8 @@ class TitleConfig(BasePropertyConfig):
 class RichTextConfig(BasePropertyConfig):
     rich_text: Dict = {}
 
-    @validator("rich_text")
+    @field_validator("rich_text")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The rich_text dict must be empty")
@@ -76,17 +80,18 @@ class NumberConfig(BasePropertyConfig):
 
 
 class SelectConfig(BasePropertyConfig):
-    select: Optional[SelectOptions]
+    select: Optional[SelectOptions] = None
 
 
 class MultiSelectConfig(BasePropertyConfig):
-    multi_select: Optional[SelectOptions]
+    multi_select: Optional[SelectOptions] = None
 
 
 class DateConfig(BasePropertyConfig):
     date: Dict = {}
 
-    @validator("date")
+    @field_validator("date")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The date dict must be empty")
@@ -96,7 +101,8 @@ class DateConfig(BasePropertyConfig):
 class PeopleConfig(BasePropertyConfig):
     people: Dict = {}
 
-    @validator("people")
+    @field_validator("people")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The people dict must be empty")
@@ -106,7 +112,8 @@ class PeopleConfig(BasePropertyConfig):
 class FilesConfig(BasePropertyConfig):
     files: Dict = {}
 
-    @validator("files")
+    @field_validator("files")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The files dict must be empty")
@@ -116,7 +123,8 @@ class FilesConfig(BasePropertyConfig):
 class CheckboxConfig(BasePropertyConfig):
     checkbox: Dict = {}
 
-    @validator("checkbox")
+    @field_validator("checkbox")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The checkbox dict must be empty")
@@ -126,7 +134,8 @@ class CheckboxConfig(BasePropertyConfig):
 class URLConfig(BasePropertyConfig):
     url: Dict = {}
 
-    @validator("url")
+    @field_validator("url")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The url dict must be empty")
@@ -136,7 +145,8 @@ class URLConfig(BasePropertyConfig):
 class EmailConfig(BasePropertyConfig):
     email: Dict = {}
 
-    @validator("email")
+    @field_validator("email")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The email dict must be empty")
@@ -146,7 +156,8 @@ class EmailConfig(BasePropertyConfig):
 class PhoneNumberConfig(BasePropertyConfig):
     phone_number: Dict = {}
 
-    @validator("phone_number")
+    @field_validator("phone_number")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The phone_number dict must be empty")
@@ -168,7 +179,8 @@ class RollupConfig(BasePropertyConfig):
 class CreatedTimeConfig(BasePropertyConfig):
     created_time: Dict = {}
 
-    @validator("created_time")
+    @field_validator("created_time")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The created_time dict must be empty")
@@ -178,7 +190,8 @@ class CreatedTimeConfig(BasePropertyConfig):
 class CreatedByConfig(BasePropertyConfig):
     created_by: Dict = {}
 
-    @validator("created_by")
+    @field_validator("created_by")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The created_by dict must be empty")
@@ -188,7 +201,8 @@ class CreatedByConfig(BasePropertyConfig):
 class LastEditedTimeConfig(BasePropertyConfig):
     last_edited_time: Dict = {}
 
-    @validator("last_edited_time")
+    @field_validator("last_edited_time")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The last_edited_time dict must be empty")
@@ -198,7 +212,8 @@ class LastEditedTimeConfig(BasePropertyConfig):
 class LastEditedByConfig(BasePropertyConfig):
     last_edited_by: Dict = {}
 
-    @validator("last_edited_by")
+    @field_validator("last_edited_by")
+    @classmethod
     def title_is_empty_dict(cls, v):
         if v:
             raise ValueError("The last_edited_by dict must be empty")

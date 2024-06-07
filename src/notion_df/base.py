@@ -1,6 +1,6 @@
 from typing import List, Dict, Optional, Any
 from enum import Enum
-from pydantic import BaseModel, validator, root_validator
+from pydantic import field_validator, BaseModel, root_validator
 import pandas as pd
 
 from notion_df.utils import is_time_string, is_uuid
@@ -51,15 +51,16 @@ class RichTextTypeEnum(str, Enum):
 
 
 class SelectOption(BaseModel):
-    id: Optional[str]
+    id: Optional[str] = None
     name: str
-    color: Optional[NotionColorEnum]
+    color: Optional[NotionColorEnum] = None
 
     @classmethod
     def from_value(cls, value: str):
         return cls(name=value)
 
-    @validator("name")
+    @field_validator("name")
+    @classmethod
     def name_cannot_contain_comma(cls, v):
         if "," in v:
             raise ValueError(f"Invalid option name {v} that contains comma")
@@ -67,7 +68,7 @@ class SelectOption(BaseModel):
 
 
 class SelectOptions(BaseModel):
-    options: Optional[List[SelectOption]]
+    options: Optional[List[SelectOption]] = None
 
     @classmethod
     def from_value(cls, values: List[str]):
@@ -82,7 +83,8 @@ class RelationObject(BaseModel):
     def from_value(cls, value: str):
         return cls(id=value)
 
-    @validator("id")
+    @field_validator("id")
+    @classmethod
     def id_must_be_uuid(cls, v):
         if not is_uuid(v):
             raise ValueError(f"Invalid id {v}")
@@ -92,15 +94,16 @@ class RelationObject(BaseModel):
 class UserObject(BaseModel):
     object: str = "user"
     id: str
-    type: Optional[str]
-    name: Optional[str]
-    avatar_url: Optional[str]
+    type: Optional[str] = None
+    name: Optional[str] = None
+    avatar_url: Optional[str] = None
 
     @classmethod
     def from_value(cls, value: str):
         return cls(id=value)
 
-    @validator("object")
+    @field_validator("object")
+    @classmethod
     def object_is_name(cls, v):
         if v != "user":
             raise ValueError(f"Invalid user object value {v}")
@@ -122,8 +125,8 @@ class FormulaProperty(BaseModel):
 class RelationProperty(BaseModel):
     database_id: str
     # TODO: Change this to UUID validation
-    synced_property_name: Optional[str]
-    synced_property_id: Optional[str]
+    synced_property_name: Optional[str] = None
+    synced_property_id: Optional[str] = None
 
 
 class DateObject(BaseModel):
@@ -131,7 +134,8 @@ class DateObject(BaseModel):
     end: Optional[str] = None
     time_zone: Optional[str] = None
 
-    @validator("start")
+    @field_validator("start")
+    @classmethod
     def is_start_ISO8601(cls, v):
         # TODO: Currently it cannot suport time ranges
         if v is not None:
@@ -141,7 +145,8 @@ class DateObject(BaseModel):
                 )
         return v
 
-    @validator("end")
+    @field_validator("end")
+    @classmethod
     def is_end_ISO8601(cls, v):
         if v is not None:
             if not is_time_string(v):
@@ -163,10 +168,10 @@ class DateObject(BaseModel):
 
 
 class RollupProperty(BaseModel):
-    relation_property_name: Optional[str]
-    relation_property_id: Optional[str]
-    rollup_property_name: Optional[str]
-    rollup_property_id: Optional[str]
+    relation_property_name: Optional[str] = None
+    relation_property_id: Optional[str] = None
+    rollup_property_name: Optional[str] = None
+    rollup_property_id: Optional[str] = None
     function: str
     # TODO: Change this to ENUM - https://developers.notion.com/reference/create-a-database#rollup-configuration
 
@@ -174,19 +179,20 @@ class RollupProperty(BaseModel):
 class RollupObject(BaseModel):
     type: str
     # TODO: Change this to ENUM - https://developers.notion.com/reference/property-value-object#rollup-property-values
-    number: Optional[float]
-    date: Optional[DateObject]
-    array: Optional[List[Any]]
+    number: Optional[float] = None
+    date: Optional[DateObject] = None
+    array: Optional[List[Any]] = None
     # Based on the description in https://developers.notion.com/reference/property-value-object#rollup-property-value-element
     # Each element is exactly like property value object, but without the "id" key.
     # As there's a preprocess step in RollupValues, each item of the array must
     # be a property value object.
-    function: Optional[str]
+    function: Optional[str] = None
     # Though the function param doesn't appear in the documentation, it exists
     # in the return values of the API. Set it as optional for future compatibility.
     # TODO: check in the future if the function param should be updated.
 
-    @validator("type")
+    @field_validator("type")
+    @classmethod
     def ensure_non_empty_data(cls, v):
         data_type = v
         if data_type is None:
@@ -208,7 +214,7 @@ class RollupObject(BaseModel):
 
 class FileTargetObject(BaseModel):
     url: str
-    expiry_time: Optional[str]
+    expiry_time: Optional[str] = None
 
     @property
     def value(self):
@@ -216,10 +222,10 @@ class FileTargetObject(BaseModel):
 
 
 class FileObject(BaseModel):
-    name: Optional[str] #TODO: Figure out why this is not required...
+    name: Optional[str] = None #TODO: Figure out why this is not required...
     type: str
-    file: Optional[FileTargetObject]
-    external: Optional[FileTargetObject]
+    file: Optional[FileTargetObject] = None
+    external: Optional[FileTargetObject] = None
 
     @property
     def value(self):
@@ -233,10 +239,10 @@ class FileObject(BaseModel):
 
 class FormulaObject(BaseModel):
     type: str
-    string: Optional[str]
-    number: Optional[float]
-    boolean: Optional[bool]
-    date: Optional[DateObject]
+    string: Optional[str] = None
+    number: Optional[float] = None
+    boolean: Optional[bool] = None
+    date: Optional[DateObject] = None
 
     @property
     def value(self):
@@ -267,7 +273,7 @@ class TextLinkObject(BaseModel):
 
 class TextObject(BaseModel):
     content: str
-    link: Optional[TextLinkObject]
+    link: Optional[TextLinkObject] = None
 
 
 class PageReferenceObject(BaseModel):
@@ -280,11 +286,11 @@ class LinkPreviewMentionObject(BaseModel):
 
 class MentionObject(BaseModel):
     type: str
-    user: Optional[UserObject]
-    page: Optional[PageReferenceObject]
-    database: Optional[PageReferenceObject]
-    date: Optional[DateObject]
-    link_preview: Optional[LinkPreviewMentionObject]
+    user: Optional[UserObject] = None
+    page: Optional[PageReferenceObject] = None
+    database: Optional[PageReferenceObject] = None
+    date: Optional[DateObject] = None
+    link_preview: Optional[LinkPreviewMentionObject] = None
 
 
 class EquationObject(BaseModel):
@@ -292,11 +298,11 @@ class EquationObject(BaseModel):
 
 
 class BaseRichTextObject(BaseModel):
-    plain_text: Optional[str]
+    plain_text: Optional[str] = None
     # TODO: The Optional[plain_text] is used when creating property values
     href: Optional[str] = None
     annotations: Optional[AnnotationObject] = None
-    type: Optional[RichTextTypeEnum]
+    type: Optional[RichTextTypeEnum] = None
 
     @property
     def value(self):
@@ -304,9 +310,9 @@ class BaseRichTextObject(BaseModel):
 
 
 class RichTextObject(BaseRichTextObject):
-    text: Optional[TextObject]
-    mention: Optional[MentionObject]
-    equation: Optional[EquationObject]
+    text: Optional[TextObject] = None
+    mention: Optional[MentionObject] = None
+    equation: Optional[EquationObject] = None
 
     @classmethod
     def from_value(cls, value: str):

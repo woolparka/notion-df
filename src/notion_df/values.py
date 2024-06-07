@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from copy import deepcopy
 import numbers
 
-from pydantic import BaseModel, parse_obj_as, validator, root_validator
+from pydantic import field_validator, BaseModel, parse_obj_as, root_validator
 import pandas as pd
 from pandas.api.types import is_array_like
 
@@ -26,9 +26,9 @@ from notion_df.utils import (
 
 
 class BasePropertyValues(BaseModel):
-    id: Optional[str]  # TODO: Rethink whether we can do this
+    id: Optional[str] = None  # TODO: Rethink whether we can do this
     # The Optional[id] is used when creating property values
-    type: Optional[str]
+    type: Optional[str] = None
 
     # TODO: Add abstractmethods for them
     @classmethod
@@ -77,7 +77,7 @@ class RichTextValues(BasePropertyValues):
 
 
 class NumberValues(BasePropertyValues):
-    number: Optional[Union[float, int]]
+    number: Optional[Union[float, int]] = None
 
     @property
     def value(self) -> str:
@@ -89,7 +89,7 @@ class NumberValues(BasePropertyValues):
 
 
 class SelectValues(BasePropertyValues):
-    select: Optional[SelectOption]
+    select: Optional[SelectOption] = None
 
     @property
     def value(self) -> Optional[str]:
@@ -118,7 +118,7 @@ class MultiSelectValues(BasePropertyValues):
 
 
 class DateValues(BasePropertyValues):
-    date: Optional[DateObject]
+    date: Optional[DateObject] = None
 
     @property
     def value(self) -> str:
@@ -175,7 +175,7 @@ class FilesValues(BasePropertyValues):
         return [file.value for file in self.files]
 
 class CheckboxValues(BasePropertyValues):
-    checkbox: Optional[bool]
+    checkbox: Optional[bool] = None
 
     @property
     def value(self) -> Optional[bool]:
@@ -187,7 +187,7 @@ class CheckboxValues(BasePropertyValues):
 
 
 class URLValues(BasePropertyValues):
-    url: Optional[str]
+    url: Optional[str] = None
 
     @property
     def value(self) -> Optional[str]:
@@ -206,7 +206,7 @@ class URLValues(BasePropertyValues):
 
 
 class EmailValues(BasePropertyValues):
-    email: Optional[str]
+    email: Optional[str] = None
 
     @property
     def value(self) -> Optional[str]:
@@ -218,7 +218,7 @@ class EmailValues(BasePropertyValues):
 
 
 class PhoneNumberValues(BasePropertyValues):
-    phone_number: Optional[str]
+    phone_number: Optional[str] = None
 
     @property
     def value(self) -> Optional[str]:
@@ -230,7 +230,7 @@ class PhoneNumberValues(BasePropertyValues):
 
 
 class CreatedTimeValues(BasePropertyValues):
-    created_time: Optional[str]
+    created_time: Optional[str] = None
 
     @property
     def value(self) -> Optional[str]:
@@ -280,7 +280,8 @@ VALUES_MAPPING = {
 class RollupValues(BasePropertyValues):
     rollup: RollupObject
 
-    @validator("rollup", pre=True)
+    @field_validator("rollup", mode="before")
+    @classmethod
     def check_rollup_values(cls, val):
         val = deepcopy(val)
         if val.get("array") is not None:
