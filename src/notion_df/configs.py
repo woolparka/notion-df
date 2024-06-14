@@ -40,9 +40,9 @@ class BasePropertyConfig(BaseModel):
 
     # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
     # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-    @validator("type", always=True)
+    @field_validator("type", always=True)
     def automatically_set_type_value(cls, v):
-        _type = list(cls.__fields__.keys())[-1]
+        _type = list(cls.model_fields.keys())[-1]
         if v is None:
             return _type
         else:
