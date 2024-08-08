@@ -1,6 +1,6 @@
-from typing import List, Dict, Optional, Any
+from typing import List, Optional, Any
 from enum import Enum
-from pydantic import field_validator, BaseModel, root_validator
+from pydantic import field_validator, BaseModel
 import pandas as pd
 
 from notion_df.utils import is_time_string, is_uuid

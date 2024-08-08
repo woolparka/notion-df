@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from copy import deepcopy
 import numbers
 
-from pydantic import field_validator, BaseModel, parse_obj_as, root_validator
+from pydantic import field_validator, BaseModel, TypeAdapter
 import pandas as pd
 from pandas.api.types import is_array_like
 
@@ -40,7 +40,7 @@ class BasePropertyValues(BaseModel):
         pass
 
     def query_dict(self):
-        return flatten_dict(self.dict())
+        return flatten_dict(self.model_dump())
 
 
 class TitleValues(BasePropertyValues):
@@ -270,9 +270,9 @@ class LastEditedByValues(BasePropertyValues):
 
 
 VALUES_MAPPING = {
-    list(_cls.__fields__.keys())[-1]: _cls
+    list(_cls.model_fields.keys())[-1]: _cls
     for _cls in BasePropertyValues.__subclasses__()
-    if len(_cls.__fields__)
+    if len(_cls.model_fields)
     == 3  # TODO: When all classes have been implemented, we can just remove this check
 }
 
@@ -286,7 +286,7 @@ class RollupValues(BasePropertyValues):
         val = deepcopy(val)
         if val.get("array") is not None:
             val["array"] = [
-                parse_obj_as(VALUES_MAPPING[data["type"]], data)
+                TypeAdapter(VALUES_MAPPING[data["type"]]).validate_python(data)
                 for data in val["array"]
             ]
         return val
@@ -300,7 +300,8 @@ VALUES_MAPPING["rollup"] = RollupValues
 
 
 def parse_single_values(data: Dict) -> BasePropertyValues:
-    return parse_obj_as(VALUES_MAPPING[data["type"]], data)
+    adapter = TypeAdapter(VALUES_MAPPING[data["type"]])
+    return adapter.validate_python(data)
 
 
 def _guess_value_schema(val: Any) -> object:

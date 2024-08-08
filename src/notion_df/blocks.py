@@ -2,7 +2,7 @@ import warnings
 from typing import List, Union, Dict, Any, Tuple, Optional, Union
 
 from notion_client import Client
-from pydantic import BaseModel, parse_obj_as, validator, root_validator
+from pydantic import BaseModel, TypeAdapter
 
 from notion_df.base import (
     RichTextObject,
@@ -280,7 +280,7 @@ class LinkToPageBlock(BaseNotionBlock):
 # TODO: Table row blocks
 
 BLOCKS_MAPPING = {
-    list(_cls.__fields__.keys())[-1]: _cls for _cls in BaseNotionBlock.__subclasses__()
+    list(_cls.model_fields.keys())[-1]: _cls for _cls in BaseNotionBlock.__subclasses__()
 }
 
 
@@ -288,8 +288,8 @@ def parse_one_block(data: Dict) -> BaseNotionBlock:
     if data["type"] not in BLOCKS_MAPPING:
         warnings.warn(f"Unknown block type: {data['type']}")
         return None
-
-    return parse_obj_as(BLOCKS_MAPPING[data["type"]], data)
+    adapter = TypeAdapter(BLOCKS_MAPPING[data["type"]])
+    return adapter.validate_python(data)
 
 
 def parse_blocks(

@@ -1,9 +1,9 @@
-from typing import List, Dict, Optional, Callable, Tuple
+from typing import Annotated, List, Dict, Optional, Callable, Tuple
 import warnings
 import itertools
 from dataclasses import dataclass
 
-from pydantic import field_validator, BaseModel, validator, parse_obj_as
+from pydantic import field_validator, BaseModel, TypeAdapter, Field
 from pandas.api.types import (
     is_datetime64_any_dtype,
     is_numeric_dtype,
@@ -33,14 +33,12 @@ from notion_df.utils import (
 
 class BasePropertyConfig(BaseModel):
     id: Optional[str] = None
-    type: Optional[str] = None
+    type: Optional[Annotated[str, Field(validate_default=True)]] = None
 
     def query_dict(self):
         return flatten_dict(self.dict())
 
-    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-    @field_validator("type", always=True)
+    @field_validator("type")
     def automatically_set_type_value(cls, v):
         _type = list(cls.model_fields.keys())[-1]
         if v is None:
@@ -244,7 +242,8 @@ NON_EDITABLE_TYPES = [
 
 
 def parse_single_config(data: Dict) -> BasePropertyConfig:
-    return parse_obj_as(CONFIGS_MAPPING[data["type"]], data)
+    adapter = TypeAdapter(CONFIGS_MAPPING[data["type"]])
+    return adapter.validate_python(data)
 
 
 CONFIGS_DF_TRANSFORMER = {
